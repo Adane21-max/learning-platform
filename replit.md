@@ -96,10 +96,15 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 The codebase is pushed to GitHub at: **https://github.com/Adane21-max/learning-platform**
 
 - Remote name: `github`
+- Remote URL: `https://github.com/Adane21-max/learning-platform.git` (no token embedded)
 - Branch: `main`
-- Token stored as secret: `GITHUB_PERSONAL_ACCESS_TOKEN`
+- Auth: git credential helper reads `GITHUB_PERSONAL_ACCESS_TOKEN` from Replit secrets at push time
 - To push future changes: `git push github main`
-- Note: The `github` remote URL embeds the token from the environment variable. If the token is rotated, update the remote with: `git remote set-url github https://Adane21-max:<NEW_TOKEN>@github.com/Adane21-max/learning-platform.git`
+
+### Auth notes
+- The PAT approach was used as a fallback after GitHub OAuth was dismissed. For long-term maintenance, connecting via Replit's GitHub OAuth integration (Settings → Integrations → GitHub) is preferred as it avoids managing a personal token.
+- If the token is rotated, update the `GITHUB_PERSONAL_ACCESS_TOKEN` secret in Replit — no git config changes needed since the token is not embedded in the remote URL.
+- The credential helper is configured in `.git/config` and reads the token from the environment at push time.
 
 ### `scripts` (`@workspace/scripts`)
 
