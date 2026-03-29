@@ -91,6 +91,16 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+## GitHub Repository
+
+The codebase is pushed to GitHub at: **https://github.com/Adane21-max/learning-platform**
+
+- Remote name: `github`
+- Branch: `main`
+- Token stored as secret: `GITHUB_PERSONAL_ACCESS_TOKEN`
+- To push future changes: `git push github main`
+- Note: The `github` remote URL embeds the token from the environment variable. If the token is rotated, update the remote with: `git remote set-url github https://Adane21-max:<NEW_TOKEN>@github.com/Adane21-max/learning-platform.git`
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
