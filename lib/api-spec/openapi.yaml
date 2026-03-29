@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Learning Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: quizzes
+    description: Quiz operations
+  - name: sessions
+    description: Quiz session operations
+  - name: auth
+    description: Authentication operations
+  - name: students
+    description: Student operations
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,462 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerStudent
+      tags: [auth]
+      summary: Register a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Registration submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginStudent
+      tags: [auth]
+      summary: Login as a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentProfile"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Account not approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutStudent
+      tags: [auth]
+      summary: Logout current student
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current logged in student
+      responses:
+        "200":
+          description: Current student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentProfile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /students/profile:
+    get:
+      operationId: getStudentProfile
+      tags: [students]
+      summary: Get current student quiz history
+      responses:
+        "200":
+          description: Student profile with quiz history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentQuizHistory"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quizzes:
+    get:
+      operationId: listQuizzes
+      tags: [quizzes]
+      summary: List all quizzes
+      responses:
+        "200":
+          description: List of quizzes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quiz"
+    post:
+      operationId: createQuiz
+      tags: [quizzes]
+      summary: Create a new quiz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuizRequest"
+      responses:
+        "201":
+          description: Quiz created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+
+  /quizzes/{quizId}:
+    get:
+      operationId: getQuiz
+      tags: [quizzes]
+      summary: Get quiz with questions
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz with questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizWithQuestions"
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteQuiz
+      tags: [quizzes]
+      summary: Delete a quiz
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Quiz deleted
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quizzes/{quizId}/questions:
+    post:
+      operationId: addQuestion
+      tags: [quizzes]
+      summary: Add a question to a quiz
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionRequest"
+      responses:
+        "201":
+          description: Question added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionWithAnswer"
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quizzes/{quizId}/questions/{questionId}:
+    delete:
+      operationId: deleteQuestion
+      tags: [quizzes]
+      summary: Delete a question
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Question deleted
+        "404":
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions:
+    post:
+      operationId: startSession
+      tags: [sessions]
+      summary: Start a new quiz session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartSessionRequest"
+      responses:
+        "201":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /sessions/{sessionId}/answer:
+    post:
+      operationId: submitAnswer
+      tags: [sessions]
+      summary: Submit an answer
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitAnswerRequest"
+      responses:
+        "200":
+          description: Answer result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnswerResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions/{sessionId}/result:
+    get:
+      operationId: getSessionResult
+      tags: [sessions]
+      summary: Get final quiz result
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin password login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/students:
+    get:
+      operationId: listStudents
+      tags: [admin]
+      summary: List all students
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentAdmin"
+
+  /admin/students/{studentId}/approve:
+    post:
+      operationId: approveStudent
+      tags: [admin]
+      summary: Approve a student registration
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/students/{studentId}/reject:
+    post:
+      operationId: rejectStudent
+      tags: [admin]
+      summary: Reject a student registration
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectStudentRequest"
+      responses:
+        "200":
+          description: Student rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/students/{studentId}/suspend:
+    post:
+      operationId: suspendStudent
+      tags: [admin]
+      summary: Suspend an approved student
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student suspended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/students/{studentId}/payment-slip:
+    get:
+      operationId: getPaymentSlip
+      tags: [admin]
+      summary: Get student payment slip
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment slip data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentSlipResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +495,344 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        paymentSlipData:
+          type: string
+          description: Base64 encoded payment slip
+        paymentSlipName:
+          type: string
+        paymentSlipMime:
+          type: string
+      required: [name, email, password, paymentSlipData, paymentSlipName, paymentSlipMime]
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        studentId:
+          type: integer
+      required: [message, studentId]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    StudentProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+      required: [id, name, email, status]
+
+    StudentAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        hasPaymentSlip:
+          type: boolean
+      required: [id, name, email, status, createdAt, hasPaymentSlip]
+
+    PaymentSlipResponse:
+      type: object
+      properties:
+        fileData:
+          type: string
+        fileName:
+          type: string
+        mimeType:
+          type: string
+      required: [fileData, fileName, mimeType]
+
+    StudentQuizHistory:
+      type: object
+      properties:
+        student:
+          $ref: "#/components/schemas/StudentProfile"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionSummary"
+        totalQuizzesTaken:
+          type: integer
+        averageScore:
+          type: number
+      required: [student, sessions, totalQuizzesTaken, averageScore]
+
+    SessionSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizName:
+          type: string
+        quizSubject:
+          type: string
+        scorePercentage:
+          type: number
+        correctAnswers:
+          type: integer
+        totalQuestions:
+          type: integer
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, quizName, quizSubject, scorePercentage, correctAnswers, totalQuestions]
+
+    AdminLoginRequest:
+      type: object
+      properties:
+        password:
+          type: string
+      required: [password]
+
+    RejectStudentRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+      required: [reason]
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+        questionCount:
+          type: integer
+      required: [id, title, subject, description, questionCount]
+
+    CreateQuizRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+      required: [title, subject, description]
+
+    CreateQuestionRequest:
+      type: object
+      properties:
+        questionText:
+          type: string
+        questionType:
+          type: string
+          enum: [multiple_choice, true_false, short_answer]
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+        correctAnswer:
+          type: string
+        explanation:
+          type: string
+          nullable: true
+      required: [questionText, questionType, correctAnswer]
+
+    QuestionWithAnswer:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizId:
+          type: integer
+        orderIndex:
+          type: integer
+        questionText:
+          type: string
+        questionType:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+        correctAnswer:
+          type: string
+        explanation:
+          type: string
+          nullable: true
+      required: [id, quizId, orderIndex, questionText, questionType, correctAnswer]
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizId:
+          type: integer
+        orderIndex:
+          type: integer
+        questionText:
+          type: string
+        questionType:
+          type: string
+          enum: [multiple_choice, true_false, short_answer]
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+      required: [id, quizId, orderIndex, questionText, questionType]
+
+    QuizWithQuestions:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+      required: [id, title, subject, description, questions]
+
+    StartSessionRequest:
+      type: object
+      properties:
+        quizId:
+          type: integer
+      required: [quizId]
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+        quizId:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        totalQuestions:
+          type: integer
+      required: [id, quizId, startedAt, totalQuestions]
+
+    SubmitAnswerRequest:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answer:
+          type: string
+      required: [questionId, answer]
+
+    AnswerResult:
+      type: object
+      properties:
+        correct:
+          type: boolean
+        correctAnswer:
+          type: string
+        explanation:
+          type: string
+          nullable: true
+        questionIndex:
+          type: integer
+        totalQuestions:
+          type: integer
+      required: [correct, correctAnswer, questionIndex, totalQuestions]
+
+    SessionResult:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+        quizId:
+          type: integer
+        quizTitle:
+          type: string
+        totalQuestions:
+          type: integer
+        correctAnswers:
+          type: integer
+        score:
+          type: number
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnswerSummary"
+      required: [sessionId, quizId, quizTitle, totalQuestions, correctAnswers, score, answers]
+
+    AnswerSummary:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        questionText:
+          type: string
+        studentAnswer:
+          type: string
+        correctAnswer:
+          type: string
+        correct:
+          type: boolean
+      required: [questionId, questionText, studentAnswer, correctAnswer, correct]

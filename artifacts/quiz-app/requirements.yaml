@@ -1,0 +1,19 @@
+packages:
+  "framer-motion": "For smooth page transitions and micro-interactions during the quiz"
+  "canvas-confetti": "For celebration effects on the results page"
+  "@types/canvas-confetti": "Types for canvas-confetti"
+  "clsx": "Utility for conditionally joining classNames"
+  "tailwind-merge": "Utility to merge tailwind classes safely"
+  "lucide-react": "Beautiful icons for UI"
+
+images:
+  - path: "artifacts/quiz-app/public/images/hero-illustration.png"
+    description: "A clean, modern 3D illustration of a glowing lightbulb, books, and abstract geometric shapes floating in an educational, bright, friendly style with soft lighting. Deep indigo and cyan accents."
+    aspect_ratio: "16:9"
+  - path: "artifacts/quiz-app/public/images/empty-state.png"
+    description: "A soft, friendly 3D illustration of an empty folder with a magnifying glass hovering over it. Clean, minimal, educational theme."
+    aspect_ratio: "1:1"
+
+notes:
+  - Uses @workspace/api-client-react for all data fetching.
+  - Relies on query params and local state to track current question index during an active session to minimize API calls for session state.
